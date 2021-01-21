@@ -40,3 +40,4 @@ vignettes/*.pdf
 
 # No Stata data files because the AUTNES data has some regulations about distribution
 *.dta
+*.pdf
