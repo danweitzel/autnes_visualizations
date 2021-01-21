@@ -39,5 +39,4 @@ vignettes/*.pdf
 .Renviron
 
 # No Stata data files because the AUTNES data has some regulations about distribution
-.dta
-10094_da_de_v1_0.dta
+*.dta
