@@ -141,10 +141,10 @@ df_online %>%
             reverse = FALSE) +
   scale_x_continuous(breaks = 1:6, labels = c("W1", "W2", "W3", "W4", "W5", "W6")) +
   coord_flip() +
-  labs(title = "Online Survey - Participation across waves for individuals taking 1st wave",
-       y = "Frequency", x = "Wave") + theme_minimal()       
-
-
+  labs(title = "Online Survey 2017", subtitle = "Participation across waves for individuals taking 1st wave",
+       caption = "Data used six wave online panel of AUTNES 2017", y = "Frequency", x = "Wave") + theme_minimal()       
+#ggsave("figures/generated/alluvial_attrition.pdf")
+#ggsave("figures/generated/alluvial_attrition.png")
 
 ### Note: Analysis for the multi-mode survey is analogous but not included in the script. 
 
