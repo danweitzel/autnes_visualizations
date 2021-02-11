@@ -1,0 +1,301 @@
+---
+title: "AG2-Treffen"
+author: "Digitize"
+date: "1/22/2021"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+## Setting the working directory
+setwd(githubdir)
+setwd("autnes_visualizations")
+
+## This loads the required packages, if they are not installed it also installs them
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, readstata13, ggalluvial, naniar, visdat)
+
+
+## Load the data sets
+## df_multi is the three wave multi-mode panel. Waves 1-2 were conducted before the election
+## and wave 3 was after the election. Each wave was doneon the phone and online. 
+## df_online is the six wave online panel. Waves 1-4 are pre-election panel waves,
+## waves 5-6 are post-election panel waves.
+## more information available on panel structure here:
+## https://autnes.at/en/autnes-data/general-election-2017
+
+df_online <- read.dta13("data/10017_da_en_v2_0.dta")
+
+
+check1 <-
+  df_online %>% 
+  filter(w1_panelist == 1) %>% 
+  dplyr::select(id, starts_with("w1_"), -c(w1_panelist:w1_dte)) %>% 
+  mutate_if(is.factor, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., ""))) %>% 
+  mutate_if(is.numeric, list(~na_if(., 99))) 
+
+
+check2 <-
+  df_online %>% 
+  filter(w2_panelist == 1) %>% 
+  dplyr::select(id, starts_with("w2_"), -c(w2_panelist:w2_dte)) %>% 
+  mutate_if(is.factor, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., ""))) %>% 
+  mutate_if(is.numeric, list(~na_if(., 99))) 
+
+check3 <-
+  df_online %>% 
+  filter(w3_panelist == 1) %>% 
+  dplyr::select(id, starts_with("w3_"), -c(w3_panelist:w3_dte)) %>% 
+  mutate_if(is.factor, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., ""))) %>% 
+  mutate_if(is.numeric, list(~na_if(., 99))) 
+
+
+check4 <-
+  df_online %>% 
+  filter(w4_panelist == 1) %>% 
+  dplyr::select(id, starts_with("w4_"), -c(w4_panelist:w4_dte)) %>% 
+  mutate_if(is.factor, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., ""))) %>% 
+  mutate_if(is.numeric, list(~na_if(., 99))) 
+
+
+check5 <-
+  df_online %>% 
+  filter(w5_panelist == 1) %>% 
+  dplyr::select(id, starts_with("w5_"), -c(w5_panelist:w5_dte)) %>% 
+  mutate_if(is.factor, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., ""))) %>% 
+  mutate_if(is.numeric, list(~na_if(., 99))) 
+
+
+check6 <-
+  df_online %>% 
+  filter(w6_panelist == 1) %>% 
+  dplyr::select(id, starts_with("w6_"), -c(w6_panelist:w6_dte)) %>% 
+  mutate_if(is.factor, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., "refused"))) %>% 
+  mutate_if(is.character, list(~na_if(., ""))) %>% 
+  mutate_if(is.numeric, list(~na_if(., 99))) 
+
+
+```
+
+## AUTNES 2017 Online Panel
+
+![AUTNES 2017 Modes and Waves](../figures/downloaded/AUTNES_2017.jpeg)
+
+## Missigness due to survey attrition
+
+## Online Survey - Participation by individuals missing 1st wave 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+df_online %>% 
+  dplyr::select(w1_panelist, w2_panelist, w3_panelist, 
+                w4_panelist, w5_panelist, w6_panelist) %>% 
+  group_by(w1_panelist, w2_panelist, w3_panelist, 
+           w4_panelist, w5_panelist, w6_panelist) %>% 
+  mutate_at(c(1:6), as.factor) %>% 
+  add_tally(name = "freq") %>% 
+  ungroup() %>% unique %>% 
+  unite(type, c(w1_panelist, w2_panelist, w3_panelist, 
+                w4_panelist, w5_panelist, w6_panelist), sep = ",", remove = FALSE) %>% 
+  filter(w1_panelist == 0) %>% 
+  ggplot(aes(y = freq,
+           axis1 = w1_panelist, axis2 = w2_panelist, axis3 = w3_panelist,
+           axis4 = w4_panelist, axis5 = w5_panelist, axis6 = w6_panelist)) +
+  geom_alluvium(aes(fill = type),
+                width = 0, knot.pos = 0, reverse = FALSE) +
+  guides(fill = FALSE) +
+  geom_stratum(width = 1/8, reverse = FALSE) +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)),
+            reverse = FALSE) +
+  scale_x_continuous(breaks = 1:6, labels = c("W1", "W2", "W3", "W4", "W5", "W6")) +
+  coord_flip() +
+  labs(y = "Frequency", x = "Wave") + theme_minimal()
+```
+
+## Online Survey - Participation by individuals taking 1st wave
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+df_online %>% 
+  dplyr::select(w1_panelist, w2_panelist, w3_panelist, 
+                w4_panelist, w5_panelist, w6_panelist) %>% 
+  group_by(w1_panelist, w2_panelist, w3_panelist, 
+           w4_panelist, w5_panelist, w6_panelist) %>% 
+  mutate_at(c(1:6), as.factor) %>% 
+  add_tally(name = "freq") %>% 
+  ungroup() %>% unique %>% 
+  unite(type, c(w1_panelist, w2_panelist, w3_panelist, 
+                w4_panelist, w5_panelist, w6_panelist), sep = ",", remove = FALSE) %>% 
+  filter(w1_panelist == 1) %>% 
+  ggplot(aes(y = freq,
+             axis1 = w1_panelist, axis2 = w2_panelist, axis3 = w3_panelist,
+             axis4 = w4_panelist, axis5 = w5_panelist, axis6 = w6_panelist)) +
+  geom_alluvium(aes(fill = type),
+                width = 0, knot.pos = 0, reverse = FALSE) +
+  guides(fill = FALSE) +
+  geom_stratum(width = 1/8, reverse = FALSE) +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)),
+            reverse = FALSE) +
+  scale_x_continuous(breaks = 1:6, labels = c("W1", "W2", "W3", "W4", "W5", "W6")) +
+  coord_flip() +
+  labs(y = "Frequency", x = "Wave") + theme_minimal()       
+```
+
+## Missigness due to Nonresponse
+
+## NA Patterns in Wave 1
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+vis_miss(check1) + labs(title = "NA Patterns in Wave 1")
+```
+
+## NA Patterns in Wave 2
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+vis_miss(check2) 
+```
+
+## NA Patterns in Wave 3
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+vis_miss(check3)
+```
+
+## NA Patterns in Wave 4
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+vis_miss(check4, warn_large_data = FALSE) 
+```
+
+## NA Patterns in Wave 5
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+vis_miss(check5) 
+```
+
+## NA Patterns in Wave 6
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+vis_miss(check6)
+```
+
+## Number of features of columns - Wave 1
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+ ### Levels
+c1 <-
+  df_online %>% 
+  filter(w1_panelist == 1)  %>% 
+  dplyr::select(id, starts_with("w1_"), -c(w1_panelist:w1_dte))
+cat <- sapply(c1, is.factor)
+indx3 <- sapply(c1[,cat], nlevels)<4
+indx5 <- sapply(c1[,cat], nlevels)<6
+indx7 <- sapply(c1[,cat], nlevels)<8
+t3 <- ncol(c1[,cat][,indx3, drop=FALSE])
+t5 <- ncol(c1[,cat][,indx5, drop=FALSE])
+t7 <- ncol(c1[,cat][,indx7, drop=FALSE])
+```
+
+- Number of columns with 3 or less: `r t3`
+- Number of columns with 5 or less: `r t5`
+- Number of columns with 7 or less: `r t7`
+
+## Number of features of columns - Wave 2
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+c1 <-
+  df_online %>% 
+  filter(w1_panelist == 2)  %>% 
+  dplyr::select(id, starts_with("w2_"), -c(w2_panelist:w2_dte))
+cat <- sapply(c1, is.factor)
+indx3 <- sapply(c1[,cat], nlevels)<4
+indx5 <- sapply(c1[,cat], nlevels)<6
+indx7 <- sapply(c1[,cat], nlevels)<8
+t3 <- ncol(c1[,cat][,indx3, drop=FALSE])
+t5 <- ncol(c1[,cat][,indx5, drop=FALSE])
+t7 <- ncol(c1[,cat][,indx7, drop=FALSE])
+```
+
+- Number of columns with 3 or less: `r t3`
+- Number of columns with 5 or less: `r t5`
+- Number of columns with 7 or less: `r t7`
+
+## Number of features of columns - Wave 3
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+c1 <- 
+  df_online %>% 
+  filter(w3_panelist == 1)  %>% 
+  dplyr::select(id, starts_with("w3_"), -c(w3_panelist:w3_dte))
+cat <- sapply(c1, is.factor)
+indx3 <- sapply(c1[,cat], nlevels)<4
+indx5 <- sapply(c1[,cat], nlevels)<6
+indx7 <- sapply(c1[,cat], nlevels)<8
+t3 <- ncol(c1[,cat][,indx3, drop=FALSE])
+t5 <- ncol(c1[,cat][,indx5, drop=FALSE])
+t7 <- ncol(c1[,cat][,indx7, drop=FALSE])
+```
+
+- Number of columns with 3 or less: `r t3`
+- Number of columns with 5 or less: `r t5`
+- Number of columns with 7 or less: `r t7`
+
+## Number of features of columns - Wave 4
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+c1 <-
+  df_online %>% 
+  filter(w4_panelist == 1)  %>% 
+  dplyr::select(id, starts_with("w4_"), -c(w4_panelist:w4_dte))
+cat <- sapply(c1, is.factor)
+indx3 <- sapply(c1[,cat], nlevels)<4
+indx5 <- sapply(c1[,cat], nlevels)<6
+indx7 <- sapply(c1[,cat], nlevels)<8
+t3 <- ncol(c1[,cat][,indx3, drop=FALSE])
+t5 <- ncol(c1[,cat][,indx5, drop=FALSE])
+t7 <- ncol(c1[,cat][,indx7, drop=FALSE])
+
+```
+
+- Number of columns with 3 or less: `r t3`
+- Number of columns with 5 or less: `r t5`
+- Number of columns with 7 or less: `r t7`
+
+
+## Number of features of columns - Wave 5
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+c1 <-
+  df_online %>% 
+  filter(w5_panelist == 1)  %>% 
+  dplyr::select(id, starts_with("w5_"), -c(w5_panelist:w5_dte))
+cat <- sapply(c1, is.factor)
+indx3 <- sapply(c1[,cat], nlevels)<4
+indx5 <- sapply(c1[,cat], nlevels)<6
+indx7 <- sapply(c1[,cat], nlevels)<8
+t3 <- ncol(c1[,cat][,indx3, drop=FALSE])
+t5 <- ncol(c1[,cat][,indx5, drop=FALSE])
+t7 <- ncol(c1[,cat][,indx7, drop=FALSE])
+
+```
+
+- Number of columns with 3 or less: `r t3`
+- Number of columns with 5 or less: `r t5`
+- Number of columns with 7 or less: `r t7`
+
+## Number of features of columns - Wave 6
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+c1 <-
+  df_online %>% 
+  filter(w6_panelist == 1)  %>% 
+  dplyr::select(id, starts_with("w6_"), -c(w6_panelist:w6_dte))
+cat <- sapply(c1, is.factor)
+indx3 <- sapply(c1[,cat], nlevels)<4
+indx5 <- sapply(c1[,cat], nlevels)<6
+indx7 <- sapply(c1[,cat], nlevels)<8
+t3 <- ncol(c1[,cat][,indx3, drop=FALSE])
+t5 <- ncol(c1[,cat][,indx5, drop=FALSE])
+t7 <- ncol(c1[,cat][,indx7, drop=FALSE])
+```
+
+- Number of columns with 3 or less: `r t3`
+- Number of columns with 5 or less: `r t5`
+- Number of columns with 7 or less: `r t7`
