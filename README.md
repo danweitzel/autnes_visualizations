@@ -1,7 +1,7 @@
 # AUTNES Analysis
 
 <p align="center">
-<img src="figures/generated/alluvial_attrition.png" width="400">
+<img src="figures/generated/alluvial_attrition.png" width="650">
 </p>
 
 This repository holds code and documentation of visualizations of missingness patterns due to unit and item nonresponse in the Australian National Election Study (AUTNES) panel data.
